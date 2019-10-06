@@ -17,6 +17,7 @@ use app\models\TimeForm;
 use yii\db\Expression;
 use yii\bootstrap\ActiveForm;
 use yii\web\Response;
+use yii\db;
 
 
 /**
@@ -90,6 +91,11 @@ class StatisticsController extends Controller
 					]
 				]));
 
+				$hashData = Statistics::find()
+					->select('hash_month_user_money')
+					->from('statistics')
+					->asArray()->all();
+
 				$importer->import(new MultipleImportStrategy([
 					'tableName' => Statistics::tableName(),
 					'configs' => [
@@ -115,9 +121,20 @@ class StatisticsController extends Controller
 							'value' => function($line) {
 								return $line[2];
 							},
+						],
+						[
+							'attribute' => 'hash_month_user_money',
+							'value' => function($line) {
+								return md5($line[0] . $line[1] . $line[2]);
+							},
 						]
 					],
-					'skipImport' => function($line) {
+					'skipImport' => function($line) use($hashData) {
+						$hashMd5 = md5($line[0] . $line[1] . $line[2]);
+						if (in_array($hashMd5, array_column($hashData, 'hash_month_user_money'))) {
+							return true;
+						}
+
 						if (count($line) <= 1) {
 							return true;
 						}
@@ -135,37 +152,49 @@ class StatisticsController extends Controller
 	public function actionTime()
 	{
 		$model = new TimeForm();
-		$flag = 0;
+		$statistics = [];
 
 		if (Yii::$app->request->isPjax && $model->load(Yii::$app->request->post())) {
 			if ($model->validate()) {
-				$flag = 1;
 				$dateTime = \DateTime::createFromFormat("Y-m-d", $model->from . '-01');
 				$start = $dateTime->format('Y-m-d');
 				$dateTime = \DateTime::createFromFormat("Y-m-d", $model->to . '-01');
 				$end = $dateTime->format('Y-m-d');
-
-				$sum = Statistics::find()
-					->where(['between', 'month', $end, $start])
+				$statistics['totalAmount'] = Statistics::find()
+					->where(['between', 'month', $start, $end])
 //					->createCommand()->getRawSql();
 					->sum('money');
 
-				$avg = Statistics::find()
-					->where(['between', 'month', $end, $start])
+				$statistics['average'] = Statistics::find()
+					->where(['between', 'month', $start, $end])
 					->average('money');
 
-				$max = Statistics::find()
-					->where(['between', 'month', $end, $start])
+				$statistics['maxTotal'] = Statistics::find()
+					->where(['between', 'month', $start, $end])
 					->max('money');
-			}
 
+				$statistics['median'] = Statistics::find()
+					->from('statistics')
+					->where(['between', 'month', $start, $end])
+					->orderBy('money ASC')
+					->asArray()->all();
+
+
+				$statistics['median'] = array_column($statistics['median'], 'money');
+				$cntElem = count($statistics['median']);
+				if ($cntElem) {
+					if ($cntElem % 2 != 0 ) {
+						$statistics['median'] = $statistics['median'][floor(($cntElem / 2))];
+					} else {
+						$statistics['median'] = ($statistics['median'][($cntElem / 2) - 1] + $statistics['median'][($cntElem / 2)]);
+					}
+				}
+			}
 		}
+
 		return $this->render('time', [
 			'model' => $model,
-			'totalAmount' => $sum,
-			'average' => $avg,
-			'maxTotal' => $max,
-			'flag' => $flag,
+			'statistics' => $statistics
 		]);
 	}
 
@@ -182,7 +211,6 @@ class StatisticsController extends Controller
 			$arrMonthAndSum['month'][] = date('F', strtotime($value['month']));
 			$arrMonthAndSum['total_money'][] = $value['total_money'];
 			$arrMonthAndSum['avg_money'][] = $value['avg_money'];
-
 		}
 
 		return $this->render('graph', ['arrMonthAndSum' => $arrMonthAndSum]);

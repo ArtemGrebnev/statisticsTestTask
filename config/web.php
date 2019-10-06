@@ -26,7 +26,7 @@ $config = [
             'enableAutoLogin' => true,
         ],
         'errorHandler' => [
-            'errorAction' => 'site/error',
+            'errorAction' => '',
         ],
         'mailer' => [
             'class' => 'yii\swiftmailer\Mailer',
@@ -50,6 +50,10 @@ $config = [
 		    'enablePrettyUrl' => true,
 		    'showScriptName' => false,
 		    'rules' => [
+		    	'/'=> 'statistics/index',
+			    'load' => 'statistics/load',
+			    'graph' => 'statistics/graph',
+			    'statistics' => 'statistics/time'
 		    ],
 	    ],
     ],

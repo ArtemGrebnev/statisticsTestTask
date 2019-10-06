@@ -62,7 +62,6 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-	    Yii::$app->getResponse()->redirect(array('/statistics'));
         return $this->render('index');
     }
 

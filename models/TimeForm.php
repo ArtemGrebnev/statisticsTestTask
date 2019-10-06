@@ -11,7 +11,6 @@ class TimeForm extends Model
 	/**
 	 * @var UploadedFile file attribute
 	 */
-	public $date_ranges;
 	public $from;
 	public $to;
 
@@ -21,9 +20,18 @@ class TimeForm extends Model
 	public function rules()
 	{
 		return [
-			[['date_ranges'], 'string'],
 			[['from', 'to'], 'safe'],
-			[['date_ranges'], 'required'],
+			[['from', 'to'], 'required'],
+		];
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public function attributeLabels()
+	{
+		return [
+			'from' => 'Starting Date',
 		];
 	}
 }

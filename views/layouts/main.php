@@ -28,6 +28,7 @@ AppAsset::register($this);
 
 <div class="wrap">
     <?php
+
     NavBar::begin([
         'brandLabel' => Yii::$app->name,
         'brandUrl' => Yii::$app->homeUrl,
@@ -38,19 +39,16 @@ AppAsset::register($this);
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav navbar-right'],
         'items' => [
-            ['label' => 'Load Csv', 'url' => ['/statistics/load']],
-            ['label' => 'Table', 'url' => ['/statistics']],
-            ['label' => 'Graph', 'url' => ['/statistics/graph']],
-            ['label' => 'Statistics', 'url' => ['/statistics/time']],
+            ['label' => 'Load Csv', 'url' => ['load']],
+            ['label' => 'Table', 'url' => ['/']],
+            ['label' => 'Graph', 'url' => ['graph']],
+            ['label' => 'Statistics', 'url' => ['time']],
         ],
     ]);
     NavBar::end();
     ?>
 
     <div class="container">
-        <?= Breadcrumbs::widget([
-            'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
-        ]) ?>
         <?= Alert::widget() ?>
         <?= $content ?>
     </div>

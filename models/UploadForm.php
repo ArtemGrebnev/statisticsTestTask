@@ -23,4 +23,14 @@ class UploadForm extends Model
 			[['file'], 'file'],
 		];
 	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public function attributeLabels()
+	{
+		return [
+			'file' => 'Выберите файл csv формата',
+		];
+	}
 }
