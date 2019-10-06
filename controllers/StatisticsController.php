@@ -103,9 +103,6 @@ class StatisticsController extends Controller
 							'attribute' => 'month',
 							'value' => function($line) {
 								$date = \DateTime::createFromFormat('Y-m-d', $line[0] . '-01');
-								//для искуственного заполения даты на разные месяцы для тестинга
-//								$i= rand(1,9);
-//								$date = \DateTime::createFromFormat('Y-m-d', '2019-0' . $i . '-01');
 								$date2 = $date->format('Y-m-d H:i:s');
 								return $date2;
 							},
@@ -131,11 +128,7 @@ class StatisticsController extends Controller
 					],
 					'skipImport' => function($line) use($hashData) {
 						$hashMd5 = md5($line[0] . $line[1] . $line[2]);
-						if (in_array($hashMd5, array_column($hashData, 'hash_month_user_money'))) {
-							return true;
-						}
-
-						if (count($line) <= 1) {
+						if (in_array($hashMd5, array_column($hashData, 'hash_month_user_money')) || count($line) <= 1) {
 							return true;
 						}
 					}
@@ -162,7 +155,6 @@ class StatisticsController extends Controller
 				$end = $dateTime->format('Y-m-d');
 				$statistics['totalAmount'] = Statistics::find()
 					->where(['between', 'month', $start, $end])
-//					->createCommand()->getRawSql();
 					->sum('money');
 
 				$statistics['average'] = Statistics::find()
